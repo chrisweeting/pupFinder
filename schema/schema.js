@@ -5,6 +5,8 @@ const {
   GraphQLString,
   GraphQLInt,
   GraphQLFloat,
+  GraphQLID,
+  GraphQLList,
   GraphQLSchema 
 } = graphql;
 
@@ -12,7 +14,7 @@ const {
 
 const pups = [
   {
-    id: "001",
+    id: "1001",
     name: "Maui",
     breed: "Labrador Retriever",
     age: 1,
@@ -22,12 +24,11 @@ const pups = [
     size: "Medium",
     color: "White",
     gender: "Male",
-    city: "Bloomfield",
-    state: "CT",
+    userId: "2001",
     fee: 0.00
   },
   {
-    id: "002",
+    id: "1002",
     name: "Zach",
     breed: "German Shepherd",
     age: 1,
@@ -37,16 +38,35 @@ const pups = [
     size: "Medium",
     color: "Black",
     gender: "Male",
-    city: "Waterbury",
-    state: "CT",
+    userId: "2002",
     fee: 325.00
   },
+];
+
+const users = [
+  {
+    id: "2001",
+    name: "Barry",
+    type: "Individual",
+    description: "n/a",
+    city: "Waterbury",
+    state: "CT",
+  },
+  {
+    id: "2002",
+    name: "Bloomfield Animal Shelter",
+    type: "Organization",
+    description: "Animal shelter established in 1950",
+    city: "Bloomfield",
+    state: "CT",
+  },
+
 ];
 
 const PupType = new GraphQLObjectType({
   name: "Pup",
   fields: () => ({
-    id: { type: GraphQLString },
+    id: { type: GraphQLID },
     name: { type: GraphQLString },
     breed: { type: GraphQLString },
     age: { type: GraphQLInt },
@@ -56,10 +76,31 @@ const PupType = new GraphQLObjectType({
     size: { type: GraphQLString },
     color: { type: GraphQLString },
     gender: { type: GraphQLString },
+    fee: { type: GraphQLFloat },
+    user: { 
+      type: UserType,
+      resolve(parent, args) {
+        return _.find(users, { id: parent.userId });
+      }
+    }
+  })
+});
+
+const UserType = new GraphQLObjectType({
+  name: "User",
+  fields: () => ({
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+    type: { type: GraphQLString },
+    description: { type: GraphQLString },
     city: { type: GraphQLString },
     state: { type: GraphQLString },
-    fee: { type: GraphQLFloat },
-    // owner: { type: UserType }
+    pups: {
+      type: new GraphQLList(PupType),
+      resolve(parent, args) {
+        return _.filter(pups, { userId: parent.id });
+      }
+    }
   })
 });
 
@@ -68,10 +109,16 @@ const RootQuery = new GraphQLObjectType({
   fields: {
     Pup: {
       type: PupType,
-      args: { id: { type: GraphQLString } },
+      args: { id: { type: GraphQLID } },
       resolve(parent, args) {
-        //code to get data from db
         return _.find(pups, {id: args.id});
+      }
+    },
+    User: {
+      type: UserType,
+      args: { id: { type: GraphQLID } },
+      resolve(parent, args) {
+        return _.find(users, {id: args.id});
       }
     }
   }
