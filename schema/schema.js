@@ -107,18 +107,30 @@ const UserType = new GraphQLObjectType({
 const RootQuery = new GraphQLObjectType({
   name: "RootQueryType",
   fields: {
-    Pup: {
+    pup: {
       type: PupType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
         return _.find(pups, {id: args.id});
       }
     },
-    User: {
+    user: {
       type: UserType,
       args: { id: { type: GraphQLID } },
       resolve(parent, args) {
         return _.find(users, {id: args.id});
+      }
+    },
+    pups: {
+      type: new GraphQLList(PupType),
+      resolve(parent, args) {
+        return pups;
+      }
+    },
+    users: {
+      type: new GraphQLList(UserType),
+      resolve(parent, args) {
+        return users;
       }
     }
   }
