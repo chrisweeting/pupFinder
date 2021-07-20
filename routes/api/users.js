@@ -4,12 +4,21 @@ const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
 const keys = require('../../config/keys');
 const jwt = require('jsonwebtoken');
+const validateSignupInput = require('../../validation/signup');
+const validateLoginInput = require('../../validation/login');
+const passport = require('passport');
 
 router.get("/test", (req, res) => {
   res.json({ msg: "this is the user route"});
 });
 
 router.post("/signup", (req, res) => {
+  const {errors, isValid} = validateSignupInput(req.body);
+
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
   User.findOne({
     username: req.body.username,
     email: req.body.email
@@ -57,6 +66,12 @@ router.post("/signup", (req, res) => {
 });
 
 router.post("/login", (req, res) => {
+  const {errors, isValid} = validateLoginInput(req.body);
+
+  if (!isValid) {
+    return res.status(400).json(errors);
+  }
+
   const username = req.body.username;
   const password = req.body.password;
 
@@ -73,6 +88,8 @@ router.post("/login", (req, res) => {
               id: user.id,
               email: user.email,
               username: user.username,
+              name: user.name,
+              type: user.type
             };
 
             jwt.sign(

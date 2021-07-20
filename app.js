@@ -8,6 +8,7 @@ const users = require("./routes/api/users");
 const pups = require("./routes/api/pups");
 const User = require('./models/User');
 const bodyParser = require('body-parser');
+const passport = require('passport');
 
 mongoose
   .connect(db, { useUnifiedTopology: true, useNewUrlParser: true, useFindAndModify: false })
@@ -20,9 +21,7 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 
-app.get("/", (req, res) => {
-  res.json({ msg: "hello..." });
-});
+app.use(passport.initialize());
 
 app.use("/graphql", graphqlHTTP({
   schema,

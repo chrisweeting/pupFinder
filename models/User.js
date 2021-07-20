@@ -14,6 +14,25 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
+  name: {
+    type: String,
+  },
+  type: {
+    type: String,
+  },
+  description: {
+    type: Schema.Types.ObjectId,
+    ref: 'pups'
+  },
+  city: {
+    type: String,
+  },
+  state: {
+    type: String,
+  },
+  pups: {
+    type: String,
+  },
   date: {
     type: Date,
     default: Date.now
