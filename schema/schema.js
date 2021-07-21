@@ -9,6 +9,8 @@ const {
   GraphQLList,
   GraphQLSchema 
 } = graphql;
+const Pup = require('../models/Pup');
+const User = require('../models/User');
 
 //test data
 
@@ -79,8 +81,10 @@ const PupType = new GraphQLObjectType({
     fee: { type: GraphQLFloat },
     user: { 
       type: UserType,
-      resolve(parent, args) {
-        return _.find(users, { id: parent.userId });
+      async resolve(parent, args) {
+        // return _.find(users, { id: parent.userId });
+        let user = await User.findById(parent.userId);
+        return user;
       }
     }
   })
@@ -90,6 +94,8 @@ const UserType = new GraphQLObjectType({
   name: "User",
   fields: () => ({
     id: { type: GraphQLID },
+    username: { type: GraphQLString },
+    email: { type: GraphQLString },
     name: { type: GraphQLString },
     type: { type: GraphQLString },
     description: { type: GraphQLString },
@@ -97,8 +103,10 @@ const UserType = new GraphQLObjectType({
     state: { type: GraphQLString },
     pups: {
       type: new GraphQLList(PupType),
-      resolve(parent, args) {
-        return _.filter(pups, { userId: parent.id });
+      async resolve(parent, args) {
+        // return _.filter(pups, { userId: parent.id });
+        let pups = await Pup.find({ userId: parent.id });
+        return pups;
       }
     }
   })
@@ -110,32 +118,80 @@ const RootQuery = new GraphQLObjectType({
     pup: {
       type: PupType,
       args: { id: { type: GraphQLID } },
-      resolve(parent, args) {
-        return _.find(pups, {id: args.id});
+      async resolve(parent, args) {
+        // return _.find(pups, {id: args.id});
+        let pup = Pup.findById(args.id);
+        return pup;
       }
     },
     user: {
       type: UserType,
       args: { id: { type: GraphQLID } },
-      resolve(parent, args) {
-        return _.find(users, {id: args.id});
+      async resolve(parent, args) {
+        // return _.find(users, {id: args.id});
+        let user = User.findById(args.id);
+        return user;
       }
     },
     pups: {
       type: new GraphQLList(PupType),
-      resolve(parent, args) {
+      async resolve(parent, args) {
+        // return pups;
+        let pups = await Pup.find();
         return pups;
       }
     },
     users: {
       type: new GraphQLList(UserType),
-      resolve(parent, args) {
+      async resolve(parent, args) {
+        // return users;
+        let users = await User.find();
         return users;
       }
     }
   }
 });
 
+const Mutation = new GraphQLObjectType({
+  name: "Mutation",
+  fields: {
+    addPup: {
+      type: PupType,
+      args: {
+        name: { type: GraphQLString },
+        breed: { type: GraphQLString },
+        age: { type: GraphQLInt },
+        status: { type: GraphQLString },
+        title: { type: GraphQLString },
+        description: { type: GraphQLString },
+        size: { type: GraphQLString },
+        color: { type: GraphQLString },
+        gender: { type: GraphQLString },
+        fee: { type: GraphQLFloat },
+        userId: { type: GraphQLID }
+      },
+      resolve(parent, args) {
+        let pup = new Pup({
+          name: args.name,
+          breed: args.breed,
+          age: args.age,
+          status: args.status,
+          title: args.title,
+          description: args.description,
+          size: args.size,
+          color: args.color,
+          gender: args.gender,
+          fee: args.fee,
+          userId: args.userId
+        });
+
+        return pup.save();
+      }
+    }
+  }
+});
+
 module.exports = new GraphQLSchema({
-  query: RootQuery
+  query: RootQuery,
+  mutation: Mutation
 });

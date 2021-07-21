@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const Float = require('mongoose-float').loadType(mongoose, 2);
 
 const PupSchema = new Schema({
-  user: {
+  userId: {
     type: Schema.Types.ObjectId,
     ref: 'users'
   },
